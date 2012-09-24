@@ -40,6 +40,7 @@ public class ClearWorld extends JavaPlugin {
 			log("Using WorldGuard!");
 		} else {
 			log("WorldGuard not founded! Disabling..");
+			this.setEnabled(false);
 		}
 		
 		if(regen) {

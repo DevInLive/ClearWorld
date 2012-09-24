@@ -1,0 +1,6 @@
+name: ClearWorld
+version: 0.4a
+author: Mayor
+website: github.com/DevInLive
+main: ru.cubelife.clearworld.ClearWorld
+softdepend: [WorldGuard, WorldEdit]
