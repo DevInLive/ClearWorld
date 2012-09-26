@@ -1,6 +1,7 @@
 package ru.cubelife.clearworld;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 import org.bukkit.configuration.file.FileConfiguration;
@@ -19,20 +20,34 @@ public class ClearWorld extends JavaPlugin {
 	/** Время в днях */
 	private long t;
 	
+	/** Путь к файлу игроков, которые игнорируются */
+	public static String ign;
 	/** Включено ли? */
 	public static boolean enabled;
 	/** Время в миллисекундах */
 	public static long time;
 	/** Регенирировать ли? */
 	public static boolean regen;
+	/** Удалять ли приваты LWC? */
+	public static boolean lwc; 
 	
 	/** Вызывается при включении */
 	public void onEnable() {
 		enabled = true;
+		log = Logger.getLogger("Minecraft");
 		cfgFile = new File(getDataFolder(), "config.yml");
 		cfg = YamlConfiguration.loadConfiguration(cfgFile);
 		loadCfg(); // Загружаем настройки
 		saveCfg(); // Сохраняем настройки
+		ign = getDataFolder() + "\\ignored-players.yml";
+		File f = new File(ign);
+		if(!f.exists()) {
+			try {
+				f.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 		
 		PluginManager pm = getServer().getPluginManager();
 		
@@ -53,7 +68,16 @@ public class ClearWorld extends JavaPlugin {
 			}
 		}
 		
-		log = Logger.getLogger("Minecraft");
+		if(lwc) {
+			if(pm.getPlugin("LWC") != null) {
+				log("Using LWC!");
+			} else {
+				log("LWC not founded! Disabling LWC privates removing..");
+				lwc = false;
+				saveCfg();
+			}
+		}
+		
 		new AutoCleaner().start(); // Запускает в отдельном потоке AutoCleaner
 		log("Enabled!");
 	}
@@ -74,12 +98,14 @@ public class ClearWorld extends JavaPlugin {
 		t = cfg.getInt("time", 30);
 		time = (t * 24 * 3600 * 1000);
 		regen = cfg.getBoolean("regen", false);
+		lwc = cfg.getBoolean("lwc", false);
 	}
 	
 	/** Сохраняет конфиг */
 	private void saveCfg() {
 		cfg.set("time", t);
 		cfg.set("regen", regen);
+		cfg.set("lwc", lwc);
 		try {
 			cfg.save(cfgFile);
 		} catch (Exception e) { }
